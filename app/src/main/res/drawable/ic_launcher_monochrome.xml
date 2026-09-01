@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 单色版本（用于主题图标）：气泡轮廓 + 对勾 -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M38,34 h32 a8,8 0 0 1 8,8 v14 a8,8 0 0 1 -8,8 h-18 l-9,10 v-10 h-5 a8,8 0 0 1 -8,-8 v-14 a8,8 0 0 1 8,-8 z" />
+</vector>
