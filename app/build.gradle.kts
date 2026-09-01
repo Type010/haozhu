@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,9 +7,18 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// Release 签名配置：读取项目根目录 keystore.properties（本地与 CI 通用）。
+// 该文件与 .keystore 均不入库；CI 由 GitHub Secrets 解码生成。
+val keystoreProps = Properties().apply {
+    val f = rootProject.file("keystore.properties")
+    if (f.exists()) {
+        f.inputStream().use { load(it) }
+    }
+}
+
 android {
     namespace = "com.jmzs.app"
-    // Miuix 0.9.3 要求 compileSdk >= 37（AGP 8.13 需配合 suppress 标记）
+    // Miuix 0.9.3 构件要求 compileSdk >= 37（AGP 8.13 需配合 suppress 标记）
     compileSdk = 37
 
     defaultConfig {
@@ -18,6 +29,17 @@ android {
         versionName = "1.0.0"
     }
 
+    signingConfigs {
+        create("release") {
+            if (keystoreProps.isNotEmpty()) {
+                storeFile = rootProject.file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -25,6 +47,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            if (keystoreProps.isNotEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

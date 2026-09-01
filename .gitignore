@@ -10,3 +10,6 @@ captures/
 .miuix-inspect/
 .emu/
 .zcode/
+# 签名密钥（不入库，CI 从 GitHub Secrets 读取）
+*.keystore
+keystore.properties
