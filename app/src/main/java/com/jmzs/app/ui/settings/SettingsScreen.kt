@@ -37,6 +37,7 @@ import com.jmzs.app.data.local.AppSettings
 import com.jmzs.app.data.local.ThemeMode
 import com.jmzs.app.service.CodeMonitor
 import com.jmzs.app.service.CodePollingService
+import com.jmzs.app.ui.components.DialogButtonTextStyle
 import com.jmzs.app.ui.components.copyToClipboard
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Button
@@ -64,7 +65,6 @@ fun SettingsScreen(container: AppContainer) {
     val snackbarHostState = remember { SnackbarHostState() }
 
     var showServerDialog by remember { mutableStateOf(false) }
-    var showAuthorDialog by remember { mutableStateOf(false) }
     var showTokenDialog by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
@@ -179,11 +179,6 @@ fun SettingsScreen(container: AppContainer) {
                             scope.launch { repo.setPollInterval(POLL_INTERVALS[index]) }
                         },
                     )
-                    ArrowPreference(
-                        title = "开发者分成账号",
-                        summary = settings.author.ifBlank { "未设置（不获取分成）" },
-                        onClick = { showAuthorDialog = true },
-                    )
                 }
             }
 
@@ -215,7 +210,7 @@ fun SettingsScreen(container: AppContainer) {
                     )
                     ArrowPreference(
                         title = "关于",
-                        summary = "版本 1.0.0",
+                        summary = "版本 1.1.0",
                         onClick = { showAboutDialog = true },
                     )
                 }
@@ -248,151 +243,137 @@ fun SettingsScreen(container: AppContainer) {
 
     // ---------- 编辑对话框 ----------
 
-    if (showServerDialog) {
-        EditTextDialog(
-            title = "服务器地址",
-            initial = settings.server,
-            placeholder = "api.haozhuma.com",
-            onDismiss = { showServerDialog = false },
-            onConfirm = { value ->
-                scope.launch { repo.setServer(value) }
-                showServerDialog = false
-            },
-        )
-    }
+    EditTextDialog(
+        show = showServerDialog,
+        title = "服务器地址",
+        initial = settings.server,
+        placeholder = "api.haozhuma.com",
+        onDismiss = { showServerDialog = false },
+        onConfirm = { value ->
+            scope.launch { repo.setServer(value) }
+            showServerDialog = false
+        },
+    )
 
-    if (showAuthorDialog) {
-        EditTextDialog(
-            title = "开发者分成账号",
-            summary = "取号接口将携带 author 参数，用户接码成功后你可获得平台利润的 50% 分成",
-            initial = settings.author,
-            placeholder = "留空则不获取分成",
-            onDismiss = { showAuthorDialog = false },
-            onConfirm = { value ->
-                scope.launch { repo.setAuthor(value) }
-                showAuthorDialog = false
-            },
-        )
-    }
-
-    if (showTokenDialog) {
-        OverlayDialog(
-            show = true,
-            title = "Token 令牌",
-            summary = "令牌为固定值，修改密码后才会变化",
-            onDismissRequest = { showTokenDialog = false },
-        ) {
-            Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
-                Text(
-                    text = settings.token.ifBlank { "（无令牌）" },
-                    color = MiuixTheme.colorScheme.onBackground,
-                    fontSize = 13.sp,
-                )
-                Spacer(Modifier.height(14.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    TextButton(
-                        text = "关闭",
-                        onClick = { showTokenDialog = false },
-                        modifier = Modifier.weight(1f),
-                    )
-                    Button(
-                        onClick = {
-                            copyToClipboard(context, "token", settings.token)
-                            showTokenDialog = false
-                            scope.launch { snackbarHostState.showSnackbar("令牌已复制") }
-                        },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColorsPrimary(),
-                    ) {
-                        Text(
-                            text = "复制",
-                            color = MiuixTheme.colorScheme.onPrimary,
-                            fontSize = 14.sp,
-                        )
-                    }
-                }
-            }
+    OverlayDialog(
+        show = showTokenDialog,
+        title = "Token 令牌",
+        summary = "令牌为固定值，修改密码后才会变化",
+        onDismissRequest = { showTokenDialog = false },
+    ) {
+        Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+            Text(
+                text = settings.token.ifBlank { "（无令牌）" },
+                color = MiuixTheme.colorScheme.onBackground,
+                fontSize = 13.sp,
+            )
+            Spacer(Modifier.height(14.dp))
+            DialogActionButtons(
+                cancelText = "关闭",
+                confirmText = "复制",
+                onCancel = { showTokenDialog = false },
+                onConfirm = {
+                    copyToClipboard(context, "token", settings.token)
+                    showTokenDialog = false
+                    scope.launch { snackbarHostState.showSnackbar("令牌已复制") }
+                },
+            )
         }
     }
 
-    if (showLogoutDialog) {
-        OverlayDialog(
-            show = true,
-            title = "退出登录",
-            summary = "退出后将清除本地保存的令牌与账号，需重新登录。",
-            onDismissRequest = { showLogoutDialog = false },
-        ) {
+    OverlayDialog(
+        show = showLogoutDialog,
+        title = "退出登录",
+        summary = "退出后将清除本地保存的令牌与账号，需重新登录。",
+        onDismissRequest = { showLogoutDialog = false },
+    ) {
+        Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+            DialogActionButtons(
+                cancelText = "取消",
+                confirmText = "退出",
+                onCancel = { showLogoutDialog = false },
+                onConfirm = {
+                    CodeMonitor.stopPolling()
+                    CodePollingService.stop(context)
+                    scope.launch { repo.clearLogin() }
+                    showLogoutDialog = false
+                },
+            )
+        }
+    }
+
+    OverlayDialog(
+        show = showAboutDialog,
+        title = "关于接码助手",
+        onDismissRequest = { showAboutDialog = false },
+    ) {
+        Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+            Text(
+                text = "版本 1.1.0",
+                color = MiuixTheme.colorScheme.onBackground,
+                fontSize = 14.sp,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "豪猪平台 API 安卓客户端\n基于 Miuix（compose-miuix-ui）构建\n任何以升级等理由要求转账的均为骗子，谨防受骗",
+                color = MiuixTheme.colorScheme.onSurfaceSecondary,
+                fontSize = 12.sp,
+                lineHeight = 18.sp,
+            )
+            Spacer(Modifier.height(14.dp))
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 TextButton(
-                    text = "取消",
-                    onClick = { showLogoutDialog = false },
+                    text = "关闭",
+                    onClick = { showAboutDialog = false },
                     modifier = Modifier.weight(1f),
+                    textStyle = DialogButtonTextStyle,
                 )
-                Button(
-                    onClick = {
-                        CodeMonitor.stopPolling()
-                        CodePollingService.stop(context)
-                        scope.launch { repo.clearLogin() }
-                        showLogoutDialog = false
-                    },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColorsPrimary(),
-                ) {
-                    Text(
-                        text = "退出",
-                        color = MiuixTheme.colorScheme.onPrimary,
-                        fontSize = 14.sp,
-                    )
-                }
-            }
-        }
-    }
-
-    if (showAboutDialog) {
-        OverlayDialog(
-            show = true,
-            title = "关于接码助手",
-            onDismissRequest = { showAboutDialog = false },
-        ) {
-            Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
-                Text(
-                    text = "版本 1.0.0",
-                    color = MiuixTheme.colorScheme.onBackground,
-                    fontSize = 14.sp,
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = "豪猪平台 API 安卓客户端\n基于 Miuix（compose-miuix-ui）构建\n任何以升级等理由要求转账的均为骗子，谨防受骗",
-                    color = MiuixTheme.colorScheme.onSurfaceSecondary,
-                    fontSize = 12.sp,
-                    lineHeight = 18.sp,
-                )
-                Spacer(Modifier.height(14.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    TextButton(
-                        text = "关闭",
-                        onClick = { showAboutDialog = false },
-                        modifier = Modifier.weight(1f),
-                    )
-                }
             }
         }
     }
 }
 
+/**
+ * 弹窗底部双按钮：次要按钮（取消/关闭）与主按钮（保存/复制/退出）统一尺寸与字号。
+ */
+@Composable
+private fun DialogActionButtons(
+    cancelText: String,
+    confirmText: String,
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        TextButton(
+            text = cancelText,
+            onClick = onCancel,
+            modifier = Modifier.weight(1f),
+            textStyle = DialogButtonTextStyle,
+        )
+        Button(
+            onClick = onConfirm,
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.buttonColorsPrimary(),
+        ) {
+            Text(
+                text = confirmText,
+                color = MiuixTheme.colorScheme.onPrimary,
+                style = DialogButtonTextStyle,
+            )
+        }
+    }
+}
+
+
 @Composable
 private fun EditTextDialog(
+    show: Boolean,
     title: String,
     initial: String,
     placeholder: String,
@@ -400,10 +381,11 @@ private fun EditTextDialog(
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
 ) {
-    var value by remember { mutableStateOf(initial) }
+    // show 变为 true（重新打开）时回填最新的初始值
+    var value by remember(show) { mutableStateOf(initial) }
 
     OverlayDialog(
-        show = true,
+        show = show,
         title = title,
         summary = summary,
         onDismissRequest = onDismiss,
@@ -418,27 +400,12 @@ private fun EditTextDialog(
                 singleLine = true,
             )
             Spacer(Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                TextButton(
-                    text = "取消",
-                    onClick = onDismiss,
-                    modifier = Modifier.weight(1f),
-                )
-                Button(
-                    onClick = { onConfirm(value) },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColorsPrimary(),
-                ) {
-                    Text(
-                        text = "保存",
-                        color = MiuixTheme.colorScheme.onPrimary,
-                        fontSize = 14.sp,
-                    )
-                }
-            }
+            DialogActionButtons(
+                cancelText = "取消",
+                confirmText = "保存",
+                onCancel = onDismiss,
+                onConfirm = { onConfirm(value) },
+            )
         }
     }
 }

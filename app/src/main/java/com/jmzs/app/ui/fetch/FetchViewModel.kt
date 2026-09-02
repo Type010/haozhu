@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.jmzs.app.data.AppContainer
 import com.jmzs.app.data.api.ApiException
 import com.jmzs.app.data.api.PhoneFilters
+import com.jmzs.app.data.local.AppSettings
 import com.jmzs.app.data.local.Project
 import com.jmzs.app.service.CodeMonitor
 import com.jmzs.app.service.CodePollingService
@@ -126,7 +127,7 @@ class FetchViewModel(private val container: AppContainer) : ViewModel() {
                         paragraph = state.paragraph,
                         exclude = state.exclude,
                         uid = state.uid,
-                        author = settings.author,
+                        author = AppSettings.DEFAULT_AUTHOR,
                     ),
                 )
                 if (response.phone.isBlank()) {

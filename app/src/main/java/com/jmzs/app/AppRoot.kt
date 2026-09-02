@@ -1,8 +1,5 @@
 package com.jmzs.app
 
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
 import android.os.Build
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +14,7 @@ import androidx.navigationevent.OnBackInvokedDefaultInput
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
 import com.jmzs.app.data.local.ThemeMode
+import com.jmzs.app.ui.components.findActivity
 import com.jmzs.app.ui.login.LoginScreen
 import com.jmzs.app.ui.main.MainScreen
 import com.jmzs.app.ui.theme.JmzsTheme
@@ -64,10 +62,4 @@ fun AppRoot() {
             }
         }
     }
-}
-
-private tailrec fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
 }

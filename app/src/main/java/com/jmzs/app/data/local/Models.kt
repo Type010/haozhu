@@ -45,8 +45,6 @@ data class AppSettings(
     val username: String = "",
     val password: String = "",
     val token: String = "",
-    /** 开发者分成账号（author 参数） */
-    val author: String = "",
     /** 验证码轮询间隔（秒） */
     val pollIntervalSec: Int = 15,
     /** 后台接码（前台服务轮询 + 通知） */
@@ -60,6 +58,8 @@ data class AppSettings(
 
     companion object {
         const val DEFAULT_SERVER = "api.haozhuma.com"
+        /** 开发者分成账号（author 参数），固定使用且不提供界面修改 */
+        const val DEFAULT_AUTHOR = "A2066584044"
         const val MAX_HISTORY = 200
     }
 }

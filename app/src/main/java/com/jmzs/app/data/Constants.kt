@@ -64,4 +64,4 @@ val ASCRIPTIONS = listOf(
 )
 
 /** 验证码轮询间隔选项（秒） */
-val POLL_INTERVALS = listOf(10, 15, 30)
+val POLL_INTERVALS = listOf(5, 10, 15)

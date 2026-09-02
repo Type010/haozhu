@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jmzs.app.data.AppContainer
 import com.jmzs.app.data.local.NumberRecord
+import com.jmzs.app.ui.components.DialogButtonTextStyle
 import com.jmzs.app.ui.components.copyToClipboard
 import com.jmzs.app.ui.fetch.formatPhone
 import top.yukonga.miuix.kmp.basic.Button
@@ -181,15 +182,17 @@ fun HistoryScreen(container: AppContainer) {
                         text = "关闭",
                         onClick = { selected = null },
                         modifier = Modifier.weight(1f),
+                        textStyle = DialogButtonTextStyle,
                     )
                     if (record.yzm.isNotBlank()) {
                         TextButton(
-                            text = "复制验证码",
+                            text = "复制",
                             onClick = {
                                 copyToClipboard(context, "验证码", record.yzm)
                                 viewModel.showToast("验证码已复制")
                             },
                             modifier = Modifier.weight(1f),
+                            textStyle = DialogButtonTextStyle,
                         )
                     }
                     Button(
@@ -201,9 +204,9 @@ fun HistoryScreen(container: AppContainer) {
                         colors = ButtonDefaults.buttonColorsPrimary(),
                     ) {
                         Text(
-                            text = "重新占用取码",
+                            text = "占用",
                             color = MiuixTheme.colorScheme.onPrimary,
-                            fontSize = 13.sp,
+                            fontSize = 14.sp,
                         )
                     }
                 }
@@ -240,6 +243,7 @@ fun HistoryScreen(container: AppContainer) {
                     text = "取消",
                     onClick = { showBlacklistConfirm = null },
                     modifier = Modifier.weight(1f),
+                    textStyle = DialogButtonTextStyle,
                 )
                 Button(
                     onClick = {
@@ -277,6 +281,7 @@ fun HistoryScreen(container: AppContainer) {
                     text = "取消",
                     onClick = { showClearConfirm = false },
                     modifier = Modifier.weight(1f),
+                    textStyle = DialogButtonTextStyle,
                 )
                 Button(
                     onClick = {

@@ -1,5 +1,10 @@
 package com.jmzs.app.ui.fetch
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,6 +27,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -38,18 +45,22 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jmzs.app.data.ASCRIPTIONS
 import com.jmzs.app.data.AppContainer
 import com.jmzs.app.data.OPERATORS
 import com.jmzs.app.data.PROVINCES
 import com.jmzs.app.data.local.Project
+import com.jmzs.app.ui.components.DialogButtonTextStyle
 import com.jmzs.app.ui.components.IconTint
 import com.jmzs.app.ui.components.copyToClipboard
+import com.jmzs.app.ui.components.findActivity
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
 import top.yukonga.miuix.kmp.basic.LinearProgressIndicator
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.basic.SnackbarHost
@@ -80,6 +91,17 @@ fun FetchScreen(container: AppContainer) {
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { snackbarHostState.showSnackbar(it) }
+    }
+
+    // 应用重新回到前台（获得焦点）时自动刷新一次余额
+    val lifecycleOwner = remember(context) { context.findActivity() as? LifecycleOwner }
+    DisposableEffect(lifecycleOwner) {
+        if (lifecycleOwner == null) return@DisposableEffect onDispose { }
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) viewModel.refreshSummary()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     Box(Modifier.fillMaxSize()) {
@@ -217,9 +239,21 @@ private fun Header(ui: FetchUiState, onRefresh: () -> Unit) {
                     contentAlignment = Alignment.Center,
                 ) {
                     if (ui.summaryLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            progress = null,
+                        // 刷新中让刷新图标原地旋转，不额外叠加圆环
+                        val rotation by rememberInfiniteTransition(label = "balanceRefresh").animateFloat(
+                            initialValue = 0f,
+                            targetValue = 360f,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(durationMillis = 900, easing = LinearEasing),
+                            ),
+                            label = "balanceRefreshRotation",
+                        )
+                        IconTint(
+                            MiuixIcons.Refresh,
+                            Color.White,
+                            Modifier
+                                .size(20.dp)
+                                .rotate(rotation),
                         )
                     } else {
                         IconTint(MiuixIcons.Refresh, Color.White, Modifier.size(20.dp))
@@ -294,6 +328,7 @@ private fun ProjectSection(
                     text = "取消",
                     onClick = { pendingRemove = null },
                     modifier = Modifier.weight(1f),
+                    textStyle = DialogButtonTextStyle,
                 )
                 Button(
                     onClick = {
@@ -353,6 +388,7 @@ private fun AddProjectDialog(
                     text = "取消",
                     onClick = onDismiss,
                     modifier = Modifier.weight(1f),
+                    textStyle = DialogButtonTextStyle,
                 )
                 Button(
                     onClick = { onConfirm(sid, name) },
@@ -863,6 +899,7 @@ private fun ConfirmDialog(
                 text = "取消",
                 onClick = onDismiss,
                 modifier = Modifier.weight(1f),
+                textStyle = DialogButtonTextStyle,
             )
             Button(
                 onClick = onConfirm,

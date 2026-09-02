@@ -1,6 +1,7 @@
 package com.jmzs.app.service
 
 import com.jmzs.app.data.AppContainer
+import com.jmzs.app.data.local.AppSettings
 import com.jmzs.app.data.local.NumberRecord
 import com.jmzs.app.service.CodeMonitor
 import com.jmzs.app.service.CodePollingService
@@ -45,7 +46,7 @@ class PhoneActions(private val container: AppContainer) {
             token = settings.token,
             sid = sid,
             phone = phone,
-            author = settings.author,
+            author = AppSettings.DEFAULT_AUTHOR,
         )
         repo.setLastSid(sid)
         CodeMonitor.startPolling(

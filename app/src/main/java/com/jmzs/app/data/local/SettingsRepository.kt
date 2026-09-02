@@ -27,7 +27,6 @@ class SettingsRepository(private val context: Context) {
         val USERNAME = stringPreferencesKey("username")
         val PASSWORD = stringPreferencesKey("password")
         val TOKEN = stringPreferencesKey("token")
-        val AUTHOR = stringPreferencesKey("author")
         val POLL_INTERVAL = intPreferencesKey("poll_interval")
         val BACKGROUND = booleanPreferencesKey("background_enabled")
         val THEME_MODE = stringPreferencesKey("theme_mode")
@@ -44,7 +43,6 @@ class SettingsRepository(private val context: Context) {
             username = prefs[Keys.USERNAME].orEmpty(),
             password = prefs[Keys.PASSWORD].orEmpty(),
             token = prefs[Keys.TOKEN].orEmpty(),
-            author = prefs[Keys.AUTHOR].orEmpty(),
             pollIntervalSec = prefs[Keys.POLL_INTERVAL] ?: 15,
             backgroundEnabled = prefs[Keys.BACKGROUND] ?: true,
             themeMode = when (prefs[Keys.THEME_MODE]) {
@@ -73,16 +71,11 @@ class SettingsRepository(private val context: Context) {
             prefs.remove(Keys.TOKEN)
             prefs.remove(Keys.USERNAME)
             prefs.remove(Keys.PASSWORD)
-            prefs.remove(Keys.AUTHOR)
         }
     }
 
     suspend fun setServer(server: String) {
         context.dataStore.edit { it[Keys.SERVER] = server.trim() }
-    }
-
-    suspend fun setAuthor(author: String) {
-        context.dataStore.edit { it[Keys.AUTHOR] = author.trim() }
     }
 
     suspend fun setPollInterval(seconds: Int) {
