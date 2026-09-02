@@ -14,9 +14,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.JieMaZhuShou">
 
+        <!-- singleTask：从通知/悬浮入口重复点击只复用已有实例，避免任务栈层层叠加 -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|screenSize|uiMode">
             <intent-filter>

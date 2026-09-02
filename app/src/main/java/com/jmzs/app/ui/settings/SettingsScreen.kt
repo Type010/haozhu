@@ -210,7 +210,7 @@ fun SettingsScreen(container: AppContainer) {
                     )
                     ArrowPreference(
                         title = "关于",
-                        summary = "版本 1.1.0",
+                        summary = "版本 1.1.1",
                         onClick = { showAboutDialog = true },
                     )
                 }
@@ -309,7 +309,7 @@ fun SettingsScreen(container: AppContainer) {
     ) {
         Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
             Text(
-                text = "版本 1.1.0",
+                text = "版本 1.1.1",
                 color = MiuixTheme.colorScheme.onBackground,
                 fontSize = 14.sp,
             )
