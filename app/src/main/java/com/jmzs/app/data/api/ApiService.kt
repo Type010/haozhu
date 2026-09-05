@@ -98,7 +98,7 @@ class ApiService {
         return parse(body, { it.code }, { it.msg })
     }
 
-    /** 获取验证码（每 15 秒轮询一次） */
+    /** 获取验证码（tm 为毫秒时间戳，防缓存；与官方 PC 客户端一致） */
     suspend fun getMessage(
         server: String,
         token: String,
@@ -112,6 +112,7 @@ class ApiService {
                 "token" to token,
                 "sid" to sid,
                 "phone" to phone,
+                "tm" to System.currentTimeMillis().toString(),
             ),
         )
         return parse(body, { it.code }, { it.msg })

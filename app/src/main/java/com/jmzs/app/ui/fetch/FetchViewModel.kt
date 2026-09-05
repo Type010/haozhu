@@ -148,6 +148,7 @@ class FetchViewModel(private val container: AppContainer) : ViewModel() {
                     projectName = projectName,
                     intervalSec = settings.pollIntervalSec,
                 )
+                // 号码到手、开始监听时才显示常驻通知
                 if (settings.backgroundEnabled) {
                     CodePollingService.start(container.context)
                 }
@@ -190,10 +191,8 @@ class FetchViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             _ui.update { it.copy(working = true) }
             try {
-                actions.releaseCurrent()
-                toast("号码已释放")
-            } catch (e: ApiException) {
-                toast(e.message ?: "释放失败")
+                val released = actions.releaseCurrent()
+                toast(if (released) "号码已释放" else "号码已失效或已释放，本地已清理")
             } catch (e: Exception) {
                 toast("释放失败：${e.message ?: ""}")
             } finally {
@@ -208,10 +207,8 @@ class FetchViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             _ui.update { it.copy(working = true) }
             try {
-                actions.blacklistCurrent()
-                toast("已拉黑该号码，不再分配")
-            } catch (e: ApiException) {
-                toast(e.message ?: "拉黑失败")
+                val blacklisted = actions.blacklistCurrent()
+                toast(if (blacklisted) "已拉黑该号码，不再分配" else "号码已失效，本地已清理")
             } catch (e: Exception) {
                 toast("拉黑失败：${e.message ?: ""}")
             } finally {

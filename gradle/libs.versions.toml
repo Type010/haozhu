@@ -1,16 +1,14 @@
 [versions]
-agp = "8.13.2"
+agp = "9.2.0"
 kotlin = "2.4.0"
 # miuix 0.9.3 由 JetBrains Compose Multiplatform 1.11.1 构建，
 # 其在 Android 端映射到 androidx.compose 1.11.2，这里精确对齐避免版本错位
 compose = "1.11.2"
 miuix = "0.9.3"
-# 以下版本为 AGP 8.13.2 可支持的最高版本（更新版本要求 AGP 9.1+）
 coreKtx = "1.17.0"
 activityCompose = "1.11.0"
 lifecycle = "2.10.0"
 datastore = "1.2.1"
-# 5.5.0 起要求 compileSdk 37，本机 SDK 为 36，锁定 5.2.0
 okhttp = "5.2.0"
 kotlinxSerialization = "1.11.0"
 
@@ -34,6 +32,6 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+# AGP 9 起内置 Kotlin 支持，不再需要 kotlin-android 插件
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

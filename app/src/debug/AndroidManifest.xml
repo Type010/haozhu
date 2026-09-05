@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 仅 debug 变体：注册 adb 调试广播入口，release 构建不包含 -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <receiver
+            android:name=".DebugHookReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.jmzs.app.DEBUG_POLLING" />
+                <action android:name="com.jmzs.app.DEBUG_INJECT_CODE" />
+                <action android:name="com.jmzs.app.DEBUG_START_SERVICE" />
+                <action android:name="com.jmzs.app.DEBUG_STOP_SERVICE" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

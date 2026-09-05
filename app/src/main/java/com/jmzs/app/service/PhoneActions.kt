@@ -64,26 +64,42 @@ class PhoneActions(private val container: AppContainer) {
         }
     }
 
-    /** 释放当前活动号码 */
-    suspend fun releaseCurrent() {
+    /** 释放当前活动号码，返回平台是否释放成功（失败时本地状态已清理） */
+    suspend fun releaseCurrent(): Boolean {
         val monitor = CodeMonitor.state.value
-        if (!monitor.active) return
+        if (!monitor.active) return false
         val settings = repo.settings.first()
-        container.apiService.cancelRecv(settings.server, settings.token, monitor.sid, monitor.phone)
-        CodeMonitor.stopPolling()
-        CodePollingService.stop(container.context)
-        recordReleased(monitor)
+        // 平台侧号码可能已失效（收码后被回收等），释放失败也必须清理本地状态，
+        // 否则界面永远卡在"可释放"，再点永远失败
+        val released = try {
+            container.apiService.cancelRecv(settings.server, settings.token, monitor.sid, monitor.phone)
+            true
+        } catch (_: Exception) {
+            false
+        } finally {
+            CodeMonitor.stopPolling()
+            CodePollingService.stop(container.context)
+        }
+        if (released) recordReleased(monitor)
+        return released
     }
 
-    /** 拉黑当前活动号码 */
-    suspend fun blacklistCurrent() {
+    /** 拉黑当前活动号码，返回平台是否拉黑成功（失败时本地状态已清理） */
+    suspend fun blacklistCurrent(): Boolean {
         val monitor = CodeMonitor.state.value
-        if (!monitor.active) return
+        if (!monitor.active) return false
         val settings = repo.settings.first()
-        container.apiService.addBlacklist(settings.server, settings.token, monitor.sid, monitor.phone)
-        CodeMonitor.stopPolling()
-        CodePollingService.stop(container.context)
-        recordReleased(monitor)
+        val blacklisted = try {
+            container.apiService.addBlacklist(settings.server, settings.token, monitor.sid, monitor.phone)
+            true
+        } catch (_: Exception) {
+            false
+        } finally {
+            CodeMonitor.stopPolling()
+            CodePollingService.stop(container.context)
+        }
+        if (blacklisted) recordReleased(monitor)
+        return blacklisted
     }
 
     /** 释放全部号码 */

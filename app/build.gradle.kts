@@ -2,7 +2,8 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    // AGP 9 起内置 Kotlin 支持，无需 kotlin-android 插件；
+    // compose 编译器插件与 serialization 编译器插件仍需显式声明
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
 }
@@ -18,15 +19,17 @@ val keystoreProps = Properties().apply {
 
 android {
     namespace = "com.jmzs.app"
-    // Miuix 0.9.3 构件要求 compileSdk >= 37（AGP 8.13 需配合 suppress 标记）
+    // Miuix 0.9.3 构件要求 compileSdk >= 37；
+    // API 37 平台包采用 minor 命名（android-37.0），需同时声明 compileSdkMinor
     compileSdk = 37
+    compileSdkMinor = 0
 
     defaultConfig {
         applicationId = "com.jmzs.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.1.1"
+        versionCode = 4
+        versionName = "1.1.2"
     }
 
     signingConfigs {

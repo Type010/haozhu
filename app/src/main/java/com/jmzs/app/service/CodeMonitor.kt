@@ -160,4 +160,16 @@ object CodeMonitor {
         sms = event.sms,
         yzm = event.yzm,
     )
+
+    /** 从当前轮询状态构造到达事件（服务停止窗口期内事件被丢弃时的补发路径） */
+    fun toArrivedEvent(state: MonitorState): CodeArrivedEvent = CodeArrivedEvent(
+        phone = state.phone,
+        sid = state.sid,
+        projectName = state.projectName,
+        sp = state.sp,
+        phoneGsd = state.phoneGsd,
+        sms = state.sms,
+        yzm = state.yzm,
+        time = if (state.lastCheckedAt > 0) state.lastCheckedAt else System.currentTimeMillis(),
+    )
 }
